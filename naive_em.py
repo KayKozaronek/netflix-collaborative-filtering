@@ -73,6 +73,7 @@ def run(X: np.ndarray, mixture: GaussianMixture,
 
     Args:
         X: (n, d) array holding the data
+        mixture: the current gaussian mixture
         post: (n, K) array holding the soft counts
             for all components for all examples
 
@@ -82,10 +83,12 @@ def run(X: np.ndarray, mixture: GaussianMixture,
             for all components for all examples
         float: log-likelihood of the current assignment
     """
-    raise NotImplementedError
+    old_LL, LL = None, None
+    
+    while old_LL == None or LL - old_LL > 10**(-6) * np.abs(LL):
+        old_LL = LL
+        
+        post, LL = estep(X, mixture) 
+        mixture = mstep(X, post)
 
-    # convergence
-    while not new_ll - old_ll <= 10**(-6) * np.abs(new_ll):
-
-
-    return (gaussian_mixture, post, LL)
+    return (mixture, post, LL)
