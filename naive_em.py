@@ -18,9 +18,25 @@ def estep(X: np.ndarray, mixture: GaussianMixture) -> Tuple[np.ndarray, float]:
         float: log-likelihood of the assignment
     """
     mu, var, p = mixture
-    log_likelihood = 
-
-    return soft_counts, log_likelihood
+    
+    K = mu.shape[0]
+#    var = var.reshape(K,1)
+#    p = p[:, np.newaxis]
+    n, d = X.shape
+    X = X[:, None]
+    
+    norm = np.linalg.norm(X - mu, axis=2) ** 2
+    exp_term = np.exp(- 1/(2*var) * norm)
+    factor_term = 1 / (2 * np.pi * var)**(d/2)
+    
+    normal = factor_term * exp_term
+    
+    denominator = np.sum(p * normal,axis=1).reshape(-1,1)
+    post = p * normal / denominator
+    
+    LL = np.sum(np.log(denominator), axis=0)
+    
+    return post, LL
 
 def mstep(X: np.ndarray, post: np.ndarray) -> GaussianMixture:
     """M-step: Updates the gaussian mixture by maximizing the log-likelihood
@@ -34,20 +50,21 @@ def mstep(X: np.ndarray, post: np.ndarray) -> GaussianMixture:
     Returns:
         GaussianMixture: the new gaussian mixture
     """
-    n, K = post.shape
+    K = post.shape[1]
     n, d = X.shape
     
     post_sum = np.sum(post, axis=0)
     
     mu_hat = np.dot(post.T, X) / post_sum.reshape(K,1)
-    p_hat = 1/n * post_sum
+    p_hat = post_sum / n
     
-    norm = [np.sum(post[j] * np.linalg.norm(X - mu_hat[j])**2) for j in range(K)]
-    var_hat = norm / (d* post_sum) 
+    norm = np.linalg.norm(X[:,None] - mu_hat, axis=2)**2 
+    var_hat = np.sum(post* norm, axis=0) / (d* post_sum) 
     
     gaussian_mixture = GaussianMixture(mu_hat, var_hat, p_hat)
 
     return gaussian_mixture
+
 
 
 def run(X: np.ndarray, mixture: GaussianMixture,

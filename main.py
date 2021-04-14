@@ -6,7 +6,6 @@ import em
 
 X = np.loadtxt("data/toy_data.txt")
 
-# TODO: Your code here
 for k in range(1,5):
     for seed in range(0,5):
         m, p = common.init(X, k, seed)
