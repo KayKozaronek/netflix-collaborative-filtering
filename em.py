@@ -18,7 +18,26 @@ def estep(X: np.ndarray, mixture: GaussianMixture) -> Tuple[np.ndarray, float]:
         float: log-likelihood of the assignment
 
     """
-    raise NotImplementedError
+    n, d = X.shape
+    mu, var, p = mixture
+    K = mu.shape[0]
+    
+    # Mask
+    mask = X.astype(bool).astype(int)
+    
+    exp_term = (np.sum(X**2, axis=1)[:,None] + (mask @ mu.T**2) - 2*(X @ mu.T))/(2*var)
+    factor_term = (-np.sum(mask, axis=1).reshape(-1,1)/2.0) @ (np.log((2*np.pi*var)).reshape(-1,1)).T
+    
+    normal = factor_term - exp_term
+    
+    f_u_j = normal + np.log(p + 1e-16)
+    
+    logsums = logsumexp(f_u_j, axis=1).reshape(-1,1)
+    log_posts = f_u_j- logsums
+    
+    LL = np.sum(logsums, axis=0)
+    
+    return np.exp(log_posts), LL
 
 
 
