@@ -56,7 +56,30 @@ def mstep(X: np.ndarray, post: np.ndarray, mixture: GaussianMixture,
     Returns:
         GaussianMixture: the new gaussian mixture
     """
-    raise NotImplementedError
+    n, d = X.shape
+    mu, _, _ = mixture
+    K = mu.shape[0]
+    
+    # Update probabilities
+    p = np.sum(post, axis=0)/n
+    
+    # Create mask
+    mask = X.astype(bool).astype(int)
+    
+    # Update means 
+    denom = post.T @ mask # Denominator (K,d)
+    numer = post.T @ X  # Numerator (K,d)
+    update_indices = np.where(denom >= 1)   # Indices for update
+    mu[update_indices] = numer[update_indices] / denom[update_indices] 
+    
+    # Update variances
+    denom_var = np.sum(post*np.sum(mask, axis=1).reshape(-1,1), axis=0) # (K,)
+    
+    norm = np.sum(X**2, axis=1)[:, np.newaxis] + (mask @ mu.T**2) - 2*(X @ mu.T)
+        
+    var = np.maximum(np.sum(post*norm, axis=0) / denom_var, min_variance)  
+    
+    return GaussianMixture(mu, var, p)
 
 
 def run(X: np.ndarray, mixture: GaussianMixture,
