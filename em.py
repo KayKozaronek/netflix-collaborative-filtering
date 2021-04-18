@@ -103,7 +103,7 @@ def run(X: np.ndarray, mixture: GaussianMixture,
         old_LL = LL
         
         post, LL = estep(X, mixture) 
-        mixture = mstep(X, post)
+        mixture = mstep(X, post, mixture)
 
     return (mixture, post, LL)
 
