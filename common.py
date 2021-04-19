@@ -67,15 +67,14 @@ def plot(X: np.ndarray, mixture: GaussianMixture, post: np.ndarray,
                       0,
                       theta,
                       theta + offset,
-                      #edgecolor=color[j]
+                      edgecolor=color[j]
                       )
             ax.add_patch(arc)
             theta += offset
     for j in range(K):
         mu = mixture.mu[j]
         sigma = np.sqrt(mixture.var[j])
-        circle = Circle(mu, sigma, #color=color[j], 
-        fill=False)
+        circle = Circle(mu, sigma, color=color[j], fill=False)
         ax.add_patch(circle)
         legend = "mu = ({:0.2f}, {:0.2f})\n stdv = {:0.2f}".format(
             mu[0], mu[1], sigma)
